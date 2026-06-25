@@ -1,0 +1,45 @@
+{% extends 'anime/base.html' %}
+{% block title %}Studi di produzione — AnimeTracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🎬 Studi di produzione</h1>
+    <p>{{ studios|length }} studi presenti</p>
+</div>
+
+{% if studios %}
+<div class="table-wrapper">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Studio</th>
+                <th>Paese</th>
+                <th>Fondato</th>
+                <th>Anime</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for studio in studios %}
+            <tr>
+                <td><span class="fw-semibold">{{ studio.name }}</span></td>
+                <td><span style="font-size:0.875rem; color:#64748b;">{{ studio.country }}</span></td>
+                <td><span style="font-size:0.875rem; color:#64748b;">{{ studio.founded_year|default:"—" }}</span></td>
+                <td>
+                    {% for anime in studio.anime_set.all %}
+                        <a href="{% url 'anime_detail' anime.id %}" style="font-size:0.8rem; color:#6366f1; text-decoration:none;">{{ anime.title }}</a>{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        <span class="text-muted" style="font-size:0.85rem;">—</span>
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card empty-state">
+    <div class="icon">🎬</div>
+    <p>Nessuno studio presente.</p>
+</div>
+{% endif %}
+{% endblock %}

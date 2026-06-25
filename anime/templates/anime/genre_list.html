@@ -1,0 +1,32 @@
+{% extends 'anime/base.html' %}
+{% block title %}Generi — AnimeTracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🏷️ Generi</h1>
+    <p>{{ genres|length }} generi disponibili</p>
+</div>
+
+{% if genres %}
+<div class="row g-3">
+    {% for genre in genres %}
+    <div class="col-md-4 col-sm-6">
+        <div class="card p-4">
+            <h5 class="fw-bold mb-1">{{ genre.name }}</h5>
+            {% if genre.description %}
+            <p style="font-size:0.875rem; color:#64748b; margin-bottom:0.75rem;">{{ genre.description }}</p>
+            {% endif %}
+            <a href="{% url 'anime_list' %}?genre={{ genre.id }}" class="btn btn-outline-primary btn-sm mt-2">
+                {{ genre.anime_set.count }} anime →
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card empty-state">
+    <div class="icon">🏷️</div>
+    <p>Nessun genere presente.</p>
+</div>
+{% endif %}
+{% endblock %}

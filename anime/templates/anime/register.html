@@ -1,0 +1,38 @@
+{% extends 'anime/base.html' %}
+{% block title %}Registrazione — AnimeTracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-5 col-lg-4">
+        <div class="text-center mb-4">
+            <div style="font-size:2.5rem;">✨</div>
+            <h4 class="fw-700 mt-2">Crea un account</h4>
+            <p style="color:#64748b; font-size:0.875rem;">Inizia a tracciare i tuoi anime preferiti</p>
+        </div>
+
+        <div class="card p-4">
+            <form method="post">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="mb-3">
+                    <label class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <div style="font-size:0.78rem; color:#94a3b8; margin-top:4px;">{{ field.help_text }}</div>
+                    {% endif %}
+                    {% if field.errors %}
+                        <div class="text-danger" style="font-size:0.8rem; margin-top:4px;">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary w-100 py-2 mt-2">Crea Account</button>
+            </form>
+        </div>
+
+        <p class="text-center mt-3" style="color:#64748b; font-size:0.875rem;">
+            Hai già un account?
+            <a href="{% url 'login' %}" style="color:#6366f1; font-weight:600; text-decoration:none;">Accedi</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

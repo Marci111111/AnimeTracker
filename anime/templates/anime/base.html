@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AnimeTracker{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --bg: #f8f9fc;
+            --card-bg: #ffffff;
+            --nav-bg: #1e1b4b;
+            --text: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --badge-watching: #3b82f6;
+            --badge-completed: #22c55e;
+            --badge-planned: #94a3b8;
+        }
+
+        * { font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); }
+
+        /* NAVBAR */
+        .navbar {
+            background-color: var(--nav-bg) !important;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            padding: 0.75rem 0;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.25rem;
+            letter-spacing: -0.3px;
+            color: #fff !important;
+        }
+        .navbar-brand span { color: #a5b4fc; }
+        .nav-link { color: #c7d2fe !important; font-weight: 500; transition: color 0.15s; }
+        .nav-link:hover { color: #fff !important; }
+        .nav-link.active { color: #fff !important; }
+        .nav-user {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 4px 14px;
+            color: #e0e7ff !important;
+            font-size: 0.875rem;
+        }
+        .btn-nav-logout {
+            background: rgba(99,102,241,0.3);
+            border: 1px solid rgba(99,102,241,0.5);
+            color: #e0e7ff !important;
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 0.875rem;
+            transition: all 0.15s;
+        }
+        .btn-nav-logout:hover { background: var(--accent); color: #fff !important; }
+
+        /* CARDS */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+
+        /* PAGE HEADER */
+        .page-header {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            border-radius: 16px;
+            padding: 2rem 2rem 1.75rem;
+            margin-bottom: 1.75rem;
+            color: white;
+        }
+        .page-header h1 { font-size: 1.75rem; font-weight: 700; margin: 0; }
+        .page-header p { color: #c7d2fe; margin: 0.35rem 0 0; font-size: 0.9rem; }
+
+        /* TABLE */
+        .table { color: var(--text); margin: 0; }
+        .table thead th {
+            background: #f1f5f9;
+            color: var(--muted);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+            padding: 0.85rem 1rem;
+        }
+        .table tbody td {
+            padding: 0.9rem 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        .table tbody tr:last-child td { border-bottom: none; }
+        .table tbody tr:hover td { background-color: #fafbff; }
+        .table-wrapper { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+
+        /* BADGES */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+        .status-watching { background: #dbeafe; color: #1d4ed8; }
+        .status-completed { background: #dcfce7; color: #15803d; }
+        .status-planned { background: #f1f5f9; color: #475569; }
+        .rating-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #fef9c3;
+            color: #854d0e;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .avg-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #fff7ed;
+            color: #c2410c;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        /* BUTTONS */
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            font-weight: 500;
+            border-radius: 8px;
+        }
+        .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+        .btn-outline-primary { color: var(--accent); border-color: var(--accent); border-radius: 8px; font-weight: 500; }
+        .btn-outline-primary:hover { background: var(--accent); border-color: var(--accent); }
+        .btn-sm { font-size: 0.8rem; padding: 5px 12px; }
+        .btn-action {
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 5px 12px;
+        }
+
+        /* SEARCH */
+        .search-box .form-control {
+            border-radius: 10px 0 0 10px;
+            border: 1.5px solid var(--border);
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+            color: var(--text);
+            background: white;
+        }
+        .search-box .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+        .search-box .btn { border-radius: 0 10px 10px 0; }
+
+        /* FILTER PILLS */
+        .filter-pill {
+            border-radius: 20px;
+            padding: 6px 18px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1.5px solid var(--border);
+            color: var(--muted);
+            background: white;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+        .filter-pill:hover { border-color: var(--accent); color: var(--accent); }
+        .filter-pill.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+        /* FORMS */
+        .form-control, .form-select {
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        }
+        .form-label { font-weight: 600; font-size: 0.875rem; color: var(--text); }
+
+        /* ALERTS */
+        .alert { border-radius: 10px; border: none; font-size: 0.9rem; }
+        .alert-success { background: #f0fdf4; color: #15803d; }
+        .alert-danger, .alert-error { background: #fef2f2; color: #b91c1c; }
+
+        /* EMPTY STATE */
+        .empty-state { padding: 3.5rem 1rem; text-align: center; }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+        .empty-state p { color: var(--muted); font-size: 1rem; }
+
+        /* ANIME TITLE LINK */
+        .anime-title { font-weight: 600; color: var(--text); }
+
+        /* IN-TABLE ICON */
+        .ep-count { color: var(--muted); font-size: 0.875rem; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'anime_list' %}">
+            🎌 Anime<span>Tracker</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto ms-3 gap-1">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'anime_list' %}">📋 Lista Anime</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'genre_list' %}">🏷️ Generi</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'studio_list' %}">🎬 Studi</a>
+                </li>
+                {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'my_list' %}">⭐ La Mia Lista</a>
+                </li>
+                {% endif %}
+            </ul>
+            <ul class="navbar-nav gap-2 align-items-center">
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <span class="nav-user">👤 {{ user.username }}</span>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'logout' %}" class="btn-nav-logout text-decoration-none">Esci</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Registrati</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container pb-5">
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    {% block content %}{% endblock %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

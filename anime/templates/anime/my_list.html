@@ -1,0 +1,97 @@
+{% extends 'anime/base.html' %}
+{% block title %}La Mia Lista — AnimeTracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>⭐ La Mia Lista</h1>
+    <p>{{ entries|length }} anime nella tua collezione</p>
+</div>
+
+<div class="d-flex gap-2 flex-wrap mb-4">
+    <a href="{% url 'my_list' %}" class="filter-pill {% if not status_filter %}active{% endif %}">
+        Tutti
+    </a>
+    {% for value, label in status_choices %}
+    <a href="?status={{ value }}" class="filter-pill {% if status_filter == value %}active{% endif %}">
+        {% if value == 'watching' %}📺{% elif value == 'completed' %}✅{% else %}🕐{% endif %}
+        {{ label }}
+    </a>
+    {% endfor %}
+</div>
+
+{% if entries %}
+<div class="table-wrapper">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Titolo</th>
+                <th>Episodi</th>
+                <th>Stato</th>
+                <th>Voto</th>
+                <th>Commento</th>
+                <th class="text-center">Azioni</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in entries %}
+            <tr>
+                <td><span class="anime-title">{{ entry.anime.title }}</span></td>
+                <td><span class="ep-count">▶ {{ entry.anime.episodes }} ep.</span></td>
+                <td>
+                    {% if entry.status == 'watching' %}
+                        <span class="status-badge status-watching">📺 In visione</span>
+                    {% elif entry.status == 'completed' %}
+                        <span class="status-badge status-completed">✅ Completato</span>
+                    {% else %}
+                        <span class="status-badge status-planned">🕐 Da vedere</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if entry.rating %}
+                        <span class="rating-badge">⭐ {{ entry.rating }}/10</span>
+                    {% else %}
+                        <span class="text-muted" style="font-size:0.85rem;">—</span>
+                    {% endif %}
+                </td>
+                <td style="max-width: 220px;">
+                    {% if entry.comment %}
+                        <span style="font-size:0.875rem; color:#64748b;">{{ entry.comment|truncatechars:55 }}</span>
+                    {% else %}
+                        <span class="text-muted" style="font-size:0.85rem;">—</span>
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    <div class="d-flex gap-1 justify-content-center">
+                        <a href="{% url 'add_to_list' entry.anime.id %}" class="btn btn-action"
+                           style="background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe;">
+                            ✏️
+                        </a>
+                        <form method="post" action="{% url 'remove_from_list' entry.anime.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-action"
+                                    style="background:#fef2f2; color:#dc2626; border:1px solid #fecaca;"
+                                    onclick="return confirm('Rimuovere {{ entry.anime.title }}?')">
+                                🗑️
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card empty-state">
+    <div class="icon">📭</div>
+    <p>
+        {% if status_filter %}
+            Nessun anime con questo stato.
+        {% else %}
+            La tua lista è vuota.
+        {% endif %}
+    </p>
+    <a href="{% url 'anime_list' %}" class="btn btn-primary btn-sm">Sfoglia anime</a>
+</div>
+{% endif %}
+{% endblock %}

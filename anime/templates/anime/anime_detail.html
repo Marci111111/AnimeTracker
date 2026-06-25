@@ -1,0 +1,162 @@
+{% extends 'anime/base.html' %}
+{% block title %}{{ anime.title }} — AnimeTracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+            <h1>{{ anime.title }}</h1>
+            <p>
+                {% if anime.studio %}{{ anime.studio.name }}{% endif %}
+                {% if anime.year %} · {{ anime.year }}{% endif %}
+                · {{ anime.episodes }} episodi
+            </p>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            {% with avg=anime.average_rating %}
+                {% if avg %}<span class="avg-badge fs-6">⭐ {{ avg }}/10</span>{% endif %}
+            {% endwith %}
+            {% if user.is_authenticated %}
+                {% if user_entry %}
+                    <a href="{% url 'add_to_list' anime.id %}" class="btn btn-sm" style="background:rgba(255,255,255,0.15); color:#fff; border:1px solid rgba(255,255,255,0.3);">✏️ La mia lista</a>
+                {% else %}
+                    <a href="{% url 'add_to_list' anime.id %}" class="btn btn-primary btn-sm">+ Aggiungi lista</a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <!-- Descrizione -->
+        {% if anime.description %}
+        <div class="card p-4 mb-4">
+            <h5 class="fw-bold mb-2">Descrizione</h5>
+            <p style="color:#475569; line-height:1.7;">{{ anime.description }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Episodi -->
+        {% if anime.episode_set.all %}
+        <div class="card mb-4">
+            <div class="p-3 border-bottom">
+                <h5 class="fw-bold mb-0">Episodi ({{ anime.episode_set.count }})</h5>
+            </div>
+            <div style="max-height:300px; overflow-y:auto;">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Titolo</th>
+                        <th>Durata</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ep in anime.episode_set.all %}
+                    <tr>
+                        <td><span class="ep-count">{{ ep.number }}</span></td>
+                        <td>{{ ep.title|default:"—" }}</td>
+                        <td><span class="ep-count">{% if ep.duration_minutes %}{{ ep.duration_minutes }} min{% else %}—{% endif %}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Recensioni -->
+        <div class="card mb-4">
+            <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0">Recensioni ({{ reviews.count }})</h5>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'add_review' anime.id %}" class="btn btn-primary btn-sm">
+                        {% if user_review %}✏️ Modifica rec.{% else %}+ Scrivi recensione{% endif %}
+                    </a>
+                {% endif %}
+            </div>
+            {% if reviews %}
+            <div class="p-3">
+                {% for review in reviews %}
+                <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <div>
+                            <strong>{{ review.title }}</strong>
+                            <span class="rating-badge ms-2">⭐ {{ review.rating }}/10</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-muted" style="font-size:0.8rem;">{{ review.user.username }} · {{ review.created_at|date:"d/m/Y" }}</span>
+                            {% if review.user == user %}
+                            <form method="post" action="{% url 'delete_review' anime.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm" style="background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; padding:2px 8px; font-size:0.75rem;">🗑️</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p style="font-size:0.9rem; color:#475569; margin:0;">{{ review.content }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state py-4">
+                <p>Nessuna recensione ancora.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Info scheda -->
+        <div class="card p-4 mb-4">
+            <h5 class="fw-bold mb-3">Scheda</h5>
+            <dl class="mb-0" style="font-size:0.9rem;">
+                <dt class="text-muted">Studio</dt>
+                <dd>{{ anime.studio.name|default:"Sconosciuto" }}</dd>
+                <dt class="text-muted">Anno</dt>
+                <dd>{{ anime.year|default:"—" }}</dd>
+                <dt class="text-muted">Episodi</dt>
+                <dd>{{ anime.episodes }}</dd>
+                <dt class="text-muted">Generi</dt>
+                <dd>
+                    {% for g in anime.genres.all %}
+                        <span class="badge" style="background:#e0e7ff; color:#3730a3; font-size:0.78rem;">{{ g.name }}</span>
+                    {% empty %}
+                        —
+                    {% endfor %}
+                </dd>
+            </dl>
+        </div>
+
+        {% if user_entry %}
+        <div class="card p-4">
+            <h5 class="fw-bold mb-3">La tua scheda</h5>
+            <dl class="mb-0" style="font-size:0.9rem;">
+                <dt class="text-muted">Stato</dt>
+                <dd>
+                    {% if user_entry.status == 'watching' %}<span class="status-badge status-watching">▶ In visione</span>
+                    {% elif user_entry.status == 'completed' %}<span class="status-badge status-completed">✓ Completato</span>
+                    {% else %}<span class="status-badge status-planned">📌 Da vedere</span>{% endif %}
+                </dd>
+                {% if user_entry.rating %}
+                <dt class="text-muted">Voto</dt>
+                <dd><span class="rating-badge">⭐ {{ user_entry.rating }}/10</span></dd>
+                {% endif %}
+                {% if user_entry.comment %}
+                <dt class="text-muted">Nota</dt>
+                <dd>{{ user_entry.comment }}</dd>
+                {% endif %}
+            </dl>
+            <div class="d-flex gap-2 mt-3">
+                <a href="{% url 'add_to_list' anime.id %}" class="btn btn-outline-primary btn-sm">✏️ Modifica</a>
+                <form method="post" action="{% url 'remove_from_list' anime.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm" style="background:#fef2f2; color:#b91c1c; border:1px solid #fecaca;">🗑️ Rimuovi</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

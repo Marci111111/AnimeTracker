@@ -1,0 +1,116 @@
+{% extends 'anime/base.html' %}
+{% block title %}Lista Anime — AnimeTracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h1>📋 Lista Anime</h1>
+            <p>{{ anime_list|length }} anime disponibili{% if query %} per "{{ query }}"{% endif %}{% if selected_genre %} nel genere "{{ selected_genre.name }}"{% endif %}</p>
+        </div>
+        <form method="get" class="search-box d-flex" style="min-width: 280px;">
+            {% if selected_genre %}<input type="hidden" name="genre" value="{{ selected_genre.id }}">{% endif %}
+            <input
+                type="text"
+                name="q"
+                class="form-control"
+                placeholder="Cerca titolo..."
+                value="{{ query }}"
+                style="background:rgba(255,255,255,0.1); color:white; border-color:rgba(255,255,255,0.2);"
+            >
+            <button class="btn btn-primary" type="submit" style="border-radius: 0 10px 10px 0;">🔍</button>
+            {% if query or selected_genre %}
+            <a href="{% url 'anime_list' %}" class="btn ms-2" style="background:rgba(255,255,255,0.1); color:white; border-radius:8px;">✕</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+{% if genres %}
+<div class="mb-3 d-flex flex-wrap gap-2">
+    <a href="{% url 'anime_list' %}{% if query %}?q={{ query }}{% endif %}" class="filter-pill {% if not selected_genre %}active{% endif %}">Tutti</a>
+    {% for g in genres %}
+    <a href="?genre={{ g.id }}{% if query %}&q={{ query }}{% endif %}" class="filter-pill {% if selected_genre.id == g.id %}active{% endif %}">{{ g.name }}</a>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if anime_list %}
+<div class="table-wrapper">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Titolo</th>
+                <th>Studio</th>
+                <th>Anno</th>
+                <th>Episodi</th>
+                <th>Generi</th>
+                <th>Media voti</th>
+                <th class="text-center">Azione</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for anime in anime_list %}
+            <tr>
+                <td>
+                    <a href="{% url 'anime_detail' anime.id %}" class="anime-title text-decoration-none">{{ anime.title }}</a>
+                </td>
+                <td>
+                    <span style="font-size:0.875rem; color:#64748b;">{{ anime.studio.name|default:"—" }}</span>
+                </td>
+                <td>
+                    <span style="font-size:0.875rem; color:#64748b;">{{ anime.year|default:"—" }}</span>
+                </td>
+                <td>
+                    <span class="ep-count">▶ {{ anime.episodes }} ep.</span>
+                </td>
+                <td>
+                    {% for g in anime.genres.all %}
+                        <span class="badge" style="background:#e0e7ff; color:#3730a3; font-size:0.72rem;">{{ g.name }}</span>
+                    {% empty %}
+                        <span class="text-muted" style="font-size:0.85rem;">—</span>
+                    {% endfor %}
+                </td>
+                <td>
+                    {% with avg=anime.average_rating %}
+                        {% if avg %}
+                            <span class="avg-badge">⭐ {{ avg }}/10</span>
+                        {% else %}
+                            <span class="text-muted" style="font-size:0.85rem;">—</span>
+                        {% endif %}
+                    {% endwith %}
+                </td>
+                <td class="text-center">
+                    {% if user.is_authenticated %}
+                        {% if anime.id in user_anime_ids %}
+                            <a href="{% url 'add_to_list' anime.id %}" class="btn btn-action"
+                               style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;">
+                                ✏️ Modifica
+                            </a>
+                        {% else %}
+                            <a href="{% url 'add_to_list' anime.id %}" class="btn btn-primary btn-action">
+                                + Aggiungi
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-action"
+                           style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; font-size:0.78rem;">
+                            Accedi per aggiungere
+                        </a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card empty-state">
+    <div class="icon">🎌</div>
+    <p>Nessun anime trovato{% if query %} per "<strong>{{ query }}</strong>"{% endif %}{% if selected_genre %} nel genere "<strong>{{ selected_genre.name }}</strong>"{% endif %}.</p>
+    {% if query or selected_genre %}
+    <a href="{% url 'anime_list' %}" class="btn btn-outline-primary btn-sm">Mostra tutti</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
