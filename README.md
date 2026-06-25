@@ -2,7 +2,7 @@
 
 Web app per tracciare anime, scrivere recensioni e gestire la propria lista personale.
 
-Progetto Django con SQLite, sviluppato come esercizio.
+Progetto Django con SQLite.
 
 ---
 
